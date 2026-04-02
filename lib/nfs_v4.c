@@ -360,7 +360,13 @@ check_nfs4_error(struct nfs_context *nfs, int status,
                 free_nfs4_cb_data(data);
                 return 1;
         }
-        /* status==RPC_STATUS_SUCCESS so res must be a valid pointer */
+        /* status==RPC_STATUS_SUCCESS so res should be a valid pointer */
+        if (res == NULL) {
+                data->cb(-EFAULT, nfs, "NFSv4: NULL response received",
+                         data->private_data);
+                free_nfs4_cb_data(data);
+                return 1;
+        }
         if (res->status != NFS4_OK) {
                 nfs_set_error(nfs, "NFS4: %s (path %s) failed with "
                               "%s(%d)", op_name,
